@@ -6,13 +6,15 @@
 
 //——————————————————————————————————————————————————————————————————————————————
 
-static bool compare_keys(data_key_t key1, data_key_t key2);
+static bool compare_keys(__m256i etalon_key, char* ptr_to_key);
+static hash_table_status_t check_key_for_uniqueness(__m256i key, node_t* list);
+static hash_table_status_t list_find(node_t* list, __m256i etalon_key, data_t* result);
 
 //——————————————————————————————————————————————————————————————————————————————
 
 hash_table_status_t hash_table_ctor(hash_table_t* hash_table,
                                     size_t        table_size,
-                                    uint32_t    (*hash_function)(data_key_t key))
+                                    uint32_t    (*hash_function)(char* ptr_to_key))
 {
     hash_table->buckets = (bucket_t*) calloc(table_size, sizeof(bucket_t));
 
@@ -49,31 +51,27 @@ hash_table_status_t hash_table_dtor(hash_table_t* hash_table)
 //==============================================================================
 
 hash_table_status_t hash_table_add(hash_table_t* hash_table,
-                                   data_key_t    key,
+                                   char*         ptr_to_key,
                                    data_t        data)
 {
-    size_t index = hash_table->hash_function(key) % hash_table->size;
+    size_t  index = hash_table->hash_function(ptr_to_key) % hash_table->size;
+    node_t* list  = hash_table->buckets[index].list;
 
     //--------------------------------------------------------------------------
 
-    node_t* current = hash_table->buckets[index].list;
-    while (current) {
-        if (compare_keys(current->key, key)) {
-            return HASH_TABLE_SAME_KEY_ERROR;
-        }
+    __m256i key  = _mm256_load_si256((__m256i*) ptr_to_key);
 
-        current = current->next;
-    }
+    VERIFY(check_key_for_uniqueness(key, list),
+           return HASH_TABLE_SAME_KEY_ERROR);
 
     //--------------------------------------------------------------------------
 
     node_t* new_node = (node_t*) allocate(&hash_table->allocator);
-    VERIFY(!new_node,
-           return HASH_TABLE_CUSTOM_ALLOC_ERROR);
+    VERIFY(!new_node, return HASH_TABLE_CUSTOM_ALLOC_ERROR);
 
     //--------------------------------------------------------------------------
 
-    new_node->key  = key;
+    new_node->key  = ptr_to_key;
     new_node->data = data;
 
     //--------------------------------------------------------------------------
@@ -89,31 +87,75 @@ hash_table_status_t hash_table_add(hash_table_t* hash_table,
 
 //==============================================================================
 
-hash_table_status_t hash_table_find(hash_table_t* hash_table,
-                                    data_key_t    key,
-                                    data_t*       result)
+hash_table_status_t check_key_for_uniqueness(__m256i key, node_t* list)
 {
-    size_t index = hash_table->hash_function(key) % hash_table->size;
+    node_t* current_elem = list;
+
+    while (current_elem) {
+        if (compare_keys(key, current_elem->key)) {
+            return HASH_TABLE_SAME_KEY_ERROR;
+        }
+
+        current_elem = current_elem->next;
+    }
 
     //--------------------------------------------------------------------------
 
-    node_t* current = hash_table->buckets[index].list;
-    while (current) {
-        if (compare_keys(current->key, key)) {
-            *result = current->data;
-            return HASH_TABLE_SUCCESS;
-        }
-        current = current->next;
+    return HASH_TABLE_SUCCESS;
+}
+
+//==============================================================================
+
+hash_table_status_t hash_table_find(hash_table_t* hash_table,
+                                    char*         ptr_to_etalon_key,
+                                    data_t*       result)
+{
+    size_t index = hash_table->hash_function(ptr_to_etalon_key) % hash_table->size;
+    node_t* list = hash_table->buckets[index].list;
+
+    //--------------------------------------------------------------------------
+
+    __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
+
+    if (list_find(list, etalon_key, result)) {
+        return HASH_TABLE_SUCCESS;
     }
+
+    //--------------------------------------------------------------------------
 
     return HASH_TABLE_FIND_FAILURE;
 }
 
 //==============================================================================
 
-bool compare_keys(data_key_t key1, data_key_t key2)
+hash_table_status_t list_find(node_t* list, __m256i etalon_key, data_t* result)
 {
-    return !strcmp(key1, key2);
+    node_t* current_elem = list;
+
+    while (current_elem) {
+        if (compare_keys(etalon_key, current_elem->key)) {
+            *result = current_elem->data;
+            return HASH_TABLE_SUCCESS;
+        }
+        current_elem = current_elem->next;
+    }
+
+    //--------------------------------------------------------------------------
+
+    return HASH_TABLE_FIND_FAILURE;
+}
+
+//==============================================================================
+
+bool compare_keys(__m256i etalon_key, char* ptr_to_key)
+{
+    __m256i  key = _mm256_load_si256((__m256i*) ptr_to_key);
+
+    __m256i  cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
+
+    int mask = _mm256_movemask_epi8(cmp_mask);
+
+    return mask == 0xffffffff;
 }
 
 //——————————————————————————————————————————————————————————————————————————————

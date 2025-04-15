@@ -8,17 +8,16 @@
 
 //——————————————————————————————————————————————————————————————————————————————
 
-const char* const TestData      = "for_testing/test.bin";
+const char* const TestFile      = "for_testing/test2.bin";
 const size_t      HashTableSize = 3571;
 
 //——————————————————————————————————————————————————————————————————————————————
 
 struct test_ctx_t
 {
-    char*       buffer;
-    data_key_t* keys;
-    data_t*     data;
-    size_t      n_strings;
+    size_t  n_words;
+    char*   keys;
+    data_t* data;
 };
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -36,10 +35,11 @@ enum test_status_t
 
 //——————————————————————————————————————————————————————————————————————————————
 
-extern uint32_t djb2_hash      (char* str);
-extern uint32_t sdbm_hash      (char* str);
-extern uint32_t crc32_hash     (char* str);
-extern uint32_t sse_crc32_hash (char* str);
+extern uint32_t djb2_hash         (char* str);
+extern uint32_t sdbm_hash         (char* str);
+extern uint32_t crc32_hash        (char* str);
+extern uint32_t intrin_crc32_hash (char* str);
+extern uint32_t avx2_crc32_hash   (char* str);
 
 //------------------------------------------------------------------------------
 
@@ -60,7 +60,7 @@ int main()
     //--------------------------------------------------------------------------
 
     hash_table_t hash_table = {};
-    hash_table_ctor(&hash_table, HashTableSize, sse_crc32_hash);
+    hash_table_ctor(&hash_table, HashTableSize, avx2_crc32_hash);
 
     //--------------------------------------------------------------------------
 
@@ -86,14 +86,14 @@ int main()
 
 test_status_t test_adding(test_ctx_t* ctx, hash_table_t* hash_table)
 {
-    size_t      n_strings  = ctx->n_strings;
-    data_key_t* keys       = ctx->keys;
-    data_t*     data       = ctx->data;
+    size_t  n_words = ctx->n_words;
+    char*   keys    = ctx->keys;
+    data_t* data    = ctx->data;
 
     //--------------------------------------------------------------------------
 
-    for (int i = 0; i < n_strings; i++) {
-        if (hash_table_add(hash_table, keys[i], data[i])) {
+    for (int i = 0; i < n_words; i++) {
+        if (hash_table_add(hash_table, &keys[i * 32], data[i])) {
             return TEST_ADDING_FAILURE;
         }
     }
@@ -107,15 +107,15 @@ test_status_t test_adding(test_ctx_t* ctx, hash_table_t* hash_table)
 
 test_status_t test_finding(test_ctx_t* ctx, hash_table_t* hash_table)
 {
-    size_t      n_strings = ctx->n_strings;
-    data_key_t* keys      = ctx->keys;
-    data_t*     data      = ctx->data;
-    data_t      result    = 0;
+    size_t  n_words = ctx->n_words;
+    char*   keys    = ctx->keys;
+    data_t* data    = ctx->data;
+    data_t  result  = 0;
 
     //--------------------------------------------------------------------------
 
-    for (int i = 0; i < n_strings; i++) {
-        hash_table_find(hash_table, keys[i], &result);
+    for (int i = 0; i < n_words; i++) {
+        hash_table_find(hash_table, &keys[i * 32], &result);
 
         if (result != data[i]) {
             return TEST_FINDING_FAILURE;
@@ -131,55 +131,30 @@ test_status_t test_finding(test_ctx_t* ctx, hash_table_t* hash_table)
 
 test_status_t test_ctx_ctor(test_ctx_t* ctx)
 {
-    FILE* test_file = fopen(TestData, "rb");
+    FILE* test_file = fopen(TestFile, "rb");
     VERIFY(!test_file, return TEST_OPEN_FILE_ERROR);
 
     //--------------------------------------------------------------------------
-    // Reading sizes through struct, so we can use only one fread().
-    //--------------------------------------------------------------------------
 
-    struct {
-        size_t file_size;
-        size_t keys_size;
-        size_t n_strings;
-    } sizes = {};
-
-    VERIFY(fread(&sizes, sizeof(sizes), 1, test_file) != 1,
+    VERIFY(fread(&ctx->n_words, sizeof(size_t), 1, test_file) != 1,
            return TEST_OPEN_FILE_ERROR);
 
+    size_t file_size = ctx->n_words * (32 + sizeof(data_t));
+
     //--------------------------------------------------------------------------
-    // Reading whole file (except sizes) in ctx->buffer.
-    //--------------------------------------------------------------------------
 
-    ctx->buffer = (char*) calloc(sizes.file_size +
-                                 sizes.n_strings * sizeof(data_key_t),
-                                 sizeof(char));
-    VERIFY(!ctx->buffer, return TEST_STD_ALLOC_ERROR);
+    char* buffer = (char*) _mm_malloc(file_size, 32);
+    VERIFY(!buffer, return TEST_STD_ALLOC_ERROR);
 
-    size_t remained_size = sizes.file_size - sizeof(sizes);
-
-    VERIFY(fread(ctx->buffer, sizeof(char), remained_size, test_file) != remained_size,
+    VERIFY(fread(buffer, sizeof(char), file_size, test_file) != file_size,
            return TEST_READ_DATA_ERROR);
 
     fclose(test_file);
 
     //--------------------------------------------------------------------------
-    // Relative pointers are accumulated lens of strings (see script.py)
-    // We are making them absolute pointers to strings (keys)
-    //--------------------------------------------------------------------------
 
-    ctx->data                 = (data_t*) (ctx->buffer + sizes.keys_size);
-    char** relative_pointers  = (char**)  (ctx->buffer + sizes.keys_size +
-                                           sizes.n_strings * sizeof(data_t));
-
-    char* base_pointer = ctx->buffer;
-
-    for (int i = 0; i < sizes.n_strings; i++) {
-        relative_pointers[i] += (size_t) base_pointer;
-    }
-
-    ctx->keys      = relative_pointers;
-    ctx->n_strings = sizes.n_strings;
+    ctx->keys = buffer;
+    ctx->data = (data_t*) (buffer + ctx->n_words * 32);
 
     //--------------------------------------------------------------------------
 
@@ -190,7 +165,7 @@ test_status_t test_ctx_ctor(test_ctx_t* ctx)
 
 test_status_t test_ctx_dtor(test_ctx_t* ctx)
 {
-    free(ctx->buffer);
+    _mm_free(ctx->keys);
 
     return TEST_SUCCESS;
 }

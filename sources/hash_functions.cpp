@@ -67,13 +67,27 @@ uint32_t crc32_hash(char* str)
 
 //==============================================================================
 
-uint32_t sse_crc32_hash(char* str)
+uint32_t intrin_crc32_hash(char* str)
 {
     uint32_t crc = 0;
 
     int i = 0;
     while (str[i] != '\0') {
         crc = _mm_crc32_u8(crc, str[i++]);
+    }
+
+    return crc;
+}
+
+//==============================================================================
+
+uint32_t avx2_crc32_hash(char* ptr_to_key)
+{
+    uint32_t crc = 0;
+
+    for (int i = 0; i < 4; i++) {
+        crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key));
+        ptr_to_key += 8 * i;
     }
 
     return crc;
