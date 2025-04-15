@@ -9,7 +9,7 @@ SOURCES_EXTENSION = .cpp
 
 ################################################################################
 
-PROFILER 	     = valgrind
+PROFILER         = valgrind
 GRAPHIC_PROFILER = kcachegrind
 
 PFLAGS = --quiet                              \
