@@ -6,7 +6,7 @@
 //——————————————————————————————————————————————————————————————————————————————
 
 static allocator_status_t reallocate_big_array (allocator_t* allocator);
-static allocator_status_t allocate_containter  (allocator_t* allocator);
+static allocator_status_t allocate_container   (allocator_t* allocator);
 
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -16,8 +16,7 @@ allocator_status_t allocator_ctor(allocator_t* allocator,
                                   size_t       elem_size)
 {
     allocator->big_array = (void**) calloc(big_array_size, sizeof(void*));
-    VERIFY(!allocator->big_array,
-            return ALLOCATOR_STD_CALLOC_ERROR);
+    VERIFY(!allocator->big_array, return ALLOCATOR_STD_CALLOC_ERROR);
 
     //--------------------------------------------------------------------------
 
@@ -55,7 +54,7 @@ void* allocate(allocator_t* allocator)
 {
     if (allocator->free_place >= (allocator->allocated_containers *
                                   allocator->container_size)) {
-        VERIFY(allocate_containter(allocator),
+        VERIFY(allocate_container(allocator),
                return nullptr);
     }
 
@@ -80,7 +79,7 @@ void* allocate(allocator_t* allocator)
 
 //==============================================================================
 
-allocator_status_t allocate_containter(allocator_t* allocator)
+allocator_status_t allocate_container(allocator_t* allocator)
 {
     if (allocator->allocated_containers >= allocator->big_array_size) {
         VERIFY(reallocate_big_array(allocator),
@@ -93,7 +92,7 @@ allocator_status_t allocate_containter(allocator_t* allocator)
         calloc(allocator->container_size * allocator->elem_size, sizeof(char));
 
     VERIFY(!allocator->big_array[allocator->allocated_containers],
-        return ALLOCATOR_STD_CALLOC_ERROR);
+           return ALLOCATOR_STD_CALLOC_ERROR);
 
     allocator->allocated_containers++;
 
@@ -110,8 +109,7 @@ allocator_status_t reallocate_big_array(allocator_t* allocator)
                                   2 * allocator->big_array_size *
                                   sizeof(void*));
 
-    VERIFY(!new_big_array,
-            return ALLOCATOR_BIG_ARRAY_REALLOC_ERROR);
+    VERIFY(!new_big_array, return ALLOCATOR_BIG_ARRAY_REALLOC_ERROR);
 
     //--------------------------------------------------------------------------
 

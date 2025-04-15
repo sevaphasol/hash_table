@@ -8,7 +8,7 @@
 //——————————————————————————————————————————————————————————————————————————————
 
 const char* const TestData      = "test.bin";
-const size_t      HashTableSize = 100000;
+const size_t      HashTableSize = 3571;
 
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -35,7 +35,10 @@ enum test_status_t
 
 //——————————————————————————————————————————————————————————————————————————————
 
-uint64_t sdbm_hash(data_key_t key);
+uint64_t djb2_hash(char* key);
+uint64_t sdbm_hash(char* key);
+
+//------------------------------------------------------------------------------
 
 test_status_t test_ctx_dtor (test_ctx_t* ctx);
 test_status_t get_test_data (test_ctx_t* ctx);
@@ -53,7 +56,7 @@ int main()
     //--------------------------------------------------------------------------
 
     hash_table_t hash_table = {};
-    hash_table_ctor(&hash_table, HashTableSize, sdbm_hash);
+    hash_table_ctor(&hash_table, HashTableSize, djb2_hash);
 
     //--------------------------------------------------------------------------
 
@@ -75,10 +78,24 @@ int main()
 
 //==============================================================================
 
-uint64_t sdbm_hash(data_key_t key)
+uint64_t djb2_hash(char* key)
+{
+    uint64_t hash = 5381;
+    uint64_t c    = 0;
+
+    while ((c = *key++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
+}
+
+//==============================================================================
+
+uint64_t sdbm_hash(char* key)
 {
     uint64_t hash = 0;
-    int c;
+    uint64_t c    = 0;
 
     while ((c = *key++)) {
         hash = c + (hash << 6) + (hash << 16) - hash;
@@ -141,6 +158,7 @@ test_status_t get_test_data(test_ctx_t* ctx)
 
     //--------------------------------------------------------------------------
     // Reading sizes through struct, so we can use only one fread().
+    //--------------------------------------------------------------------------
 
     struct {
         size_t file_size;
@@ -153,6 +171,7 @@ test_status_t get_test_data(test_ctx_t* ctx)
 
     //--------------------------------------------------------------------------
     // Reading whole file (except sizes) in ctx->buffer.
+    //--------------------------------------------------------------------------
 
     ctx->buffer = (char*) calloc(sizes.file_size +
                                  sizes.n_strings * sizeof(data_key_t),
@@ -169,6 +188,7 @@ test_status_t get_test_data(test_ctx_t* ctx)
     //--------------------------------------------------------------------------
     // Relative pointers are accumulated lens of strings (see script.py)
     // We are making them absolute pointers to strings (keys)
+    //--------------------------------------------------------------------------
 
     ctx->data                 = (data_t*) (ctx->buffer + sizes.keys_size);
     char** relative_pointers  = (char**)  (ctx->buffer + sizes.keys_size +
