@@ -7,7 +7,7 @@
 
 //——————————————————————————————————————————————————————————————————————————————
 
-const char* const TestData      = "test.bin";
+const char* const TestData      = "testing_data/test.bin";
 const size_t      HashTableSize = 3571;
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -51,7 +51,9 @@ test_status_t test_finding  (test_ctx_t* ctx, hash_table_t* hash_table);
 int main()
 {
     test_ctx_t ctx = {};
-    get_test_data(&ctx);
+    if (get_test_data(&ctx)) {
+        return 0;
+    }
 
     //--------------------------------------------------------------------------
 
@@ -62,10 +64,12 @@ int main()
 
     if (test_adding(&ctx, &hash_table)) {
         fprintf(stderr, "test_adding failure\n");
+        return 0;
     }
 
     if (test_finding(&ctx, &hash_table)) {
         fprintf(stderr, "test_finding failure\n");
+        return 0;
     }
 
     //--------------------------------------------------------------------------
