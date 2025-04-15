@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include <stdlib.h>
+#include <immintrin.h>
 
 #include "allocator.h"
 
@@ -50,31 +51,31 @@ struct hash_table_t
 {
     size_t      size;
     bucket_t*   buckets;
-    uint64_t  (*hash_function)(data_key_t key);
+    uint32_t  (*hash_function)(data_key_t key);
     allocator_t allocator;
 };
 
 //——————————————————————————————————————————————————————————————————————————————
 
-hash_table_status_t hash_table_ctor   (hash_table_t* hash_table,
-                                       size_t        table_size,
-                                       uint64_t    (*hash_function)(data_key_t key));
+hash_table_status_t hash_table_ctor (hash_table_t* hash_table,
+                                     size_t        table_size,
+                                     uint32_t    (*hash_function)(data_key_t key));
 
 //==============================================================================
 
-hash_table_status_t hash_table_dtor   (hash_table_t* hash_table);
+hash_table_status_t hash_table_dtor (hash_table_t* hash_table);
 
 //==============================================================================
 
-hash_table_status_t hash_table_add    (hash_table_t* hash_table,
-                                       data_key_t         key,
-                                       data_t        data);
+hash_table_status_t hash_table_add  (hash_table_t* hash_table,
+                                     data_key_t    key,
+                                     data_t        data);
 
 //==============================================================================
 
-hash_table_status_t hash_table_find   (hash_table_t* hash_table,
-                                       data_key_t         key,
-                                       data_t*       result);
+hash_table_status_t hash_table_find (hash_table_t* hash_table,
+                                     data_key_t    key,
+                                     data_t*       result);
 
 //——————————————————————————————————————————————————————————————————————————————
 

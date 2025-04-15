@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <immintrin.h>
 
 #include "hash_table.h"
 #include "custom_assert.h"
 
 //——————————————————————————————————————————————————————————————————————————————
 
-const char* const TestData      = "testing_data/test.bin";
+const char* const TestData      = "for_testing/test.bin";
 const size_t      HashTableSize = 3571;
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -35,13 +36,13 @@ enum test_status_t
 
 //——————————————————————————————————————————————————————————————————————————————
 
-uint64_t djb2_hash(char* key);
-uint64_t sdbm_hash(char* key);
+extern uint32_t djb2_hash  (char* key);
+extern uint32_t sdbm_hash  (char* key);
+extern uint32_t crc32_hash (char* str);
 
 //------------------------------------------------------------------------------
 
-test_status_t test_ctx_dtor (test_ctx_t* ctx);
-test_status_t get_test_data (test_ctx_t* ctx);
+test_status_t test_ctx_ctor (test_ctx_t* ctx);
 test_status_t test_ctx_dtor (test_ctx_t* ctx);
 test_status_t test_adding   (test_ctx_t* ctx, hash_table_t* hash_table);
 test_status_t test_finding  (test_ctx_t* ctx, hash_table_t* hash_table);
@@ -51,7 +52,7 @@ test_status_t test_finding  (test_ctx_t* ctx, hash_table_t* hash_table);
 int main()
 {
     test_ctx_t ctx = {};
-    if (get_test_data(&ctx)) {
+    if (test_ctx_ctor(&ctx)) {
         return 0;
     }
 
@@ -78,34 +79,6 @@ int main()
     test_ctx_dtor(&ctx);
 
     return 0;
-}
-
-//==============================================================================
-
-uint64_t djb2_hash(char* key)
-{
-    uint64_t hash = 5381;
-    uint64_t c    = 0;
-
-    while ((c = *key++)) {
-        hash = ((hash << 5) + hash) + c;
-    }
-
-    return hash;
-}
-
-//==============================================================================
-
-uint64_t sdbm_hash(char* key)
-{
-    uint64_t hash = 0;
-    uint64_t c    = 0;
-
-    while ((c = *key++)) {
-        hash = c + (hash << 6) + (hash << 16) - hash;
-    }
-
-    return hash;
 }
 
 //==============================================================================
@@ -155,7 +128,7 @@ test_status_t test_finding(test_ctx_t* ctx, hash_table_t* hash_table)
 
 //==============================================================================
 
-test_status_t get_test_data(test_ctx_t* ctx)
+test_status_t test_ctx_ctor(test_ctx_t* ctx)
 {
     FILE* test_file = fopen(TestData, "rb");
     VERIFY(!test_file, return TEST_OPEN_FILE_ERROR);

@@ -12,7 +12,7 @@ static bool compare_keys(data_key_t key1, data_key_t key2);
 
 hash_table_status_t hash_table_ctor(hash_table_t* hash_table,
                                     size_t        table_size,
-                                    uint64_t    (*hash_function)(data_key_t key))
+                                    uint32_t    (*hash_function)(data_key_t key))
 {
     hash_table->buckets = (bucket_t*) calloc(table_size, sizeof(bucket_t));
 
