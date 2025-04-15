@@ -5,8 +5,6 @@ CFLAGS = -g          \
          -O0         \
          -fno-inline \
 
-SOURCES_EXTENSION = .cpp
-
 ################################################################################
 
 PROFILER         = valgrind
@@ -22,30 +20,30 @@ PFLAGS = --quiet                              \
 
 SOURCES_DIR = sources
 OBJECTS_DIR = build
-BUILD_DIR   = bin
+OUTPUT_DIR  = bin
 
-EXE      = hash-table
-EXE_PATH = $(BUILD_DIR)/$(EXE)
+OUTPUT      = hash-table
+OUTPUT_PATH = $(OUTPUT_DIR)/$(OUTPUT)
 
 PROFILE_DATA = callgrind.out
 
 ################################################################################
 
-SOURCE_FILES = $(wildcard $(SOURCES_DIR)/*.cpp)
-OBJECT_FILES = $(subst $(SOURCES_DIR), $(OBJECTS_DIR), $(SOURCE_FILES:.cpp=.o))
+SOURCES = $(wildcard $(SOURCES_DIR)/*.cpp)
+OBJECTS = $(subst $(SOURCES_DIR), $(OBJECTS_DIR), $(SOURCES:.cpp=.o))
 
 ################################################################################
 
-all: $(EXE_PATH)
+all: $(OUTPUT_PATH)
 
-$(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
+$(OUTPUT_DIR):
+	@mkdir -p $(OUTPUT_DIR)
 
 $(OBJECTS_DIR):
 	@mkdir -p $(OBJECTS_DIR)
 
-$(EXE_PATH): $(OBJECT_FILES) $(BUILD_DIR)
-	@$(COMPILER) $(OBJECT_FILES) -o $@ $(LDFLAGS)
+$(OUTPUT_PATH): $(OBJECTS) $(OUTPUT_DIR)
+	@$(COMPILER) $(OBJECTS) -o $@ $(LDFLAGS)
 
 $(OBJECTS_DIR)/%.o: $(SOURCES_DIR)/%.cpp $(OBJECTS_DIR)
 	@$(COMPILER) -c $(CFLAGS) $< -o $@
@@ -53,20 +51,20 @@ $(OBJECTS_DIR)/%.o: $(SOURCES_DIR)/%.cpp $(OBJECTS_DIR)
 ################################################################################
 
 clean:
-	rm -fr $(OBJECTS_DIR) $(BUILD_DIR) $(LOGS_DIR) callgrind.out
+	rm -fr $(OBJECTS_DIR) $(OUTPUT_DIR) $(LOGS_DIR) $(PROFILE_DATA)
 
 ################################################################################
 
 run:
 	@make -s clean
 	@make -s all
-	@$(EXE_PATH)
+	@$(OUTPUT_PATH)
 
 ################################################################################
 
 profile:
 	@make -s run
-	@$(PROFILER) $(PFLAGS) $(EXE_PATH)
-	@$(GRAPHIC_PROFILER) callgrind.out 2>/dev/null &
+	@$(PROFILER) $(PFLAGS) $(OUTPUT_PATH)
+	@$(GRAPHIC_PROFILER) $(PROFILE_DATA) 2>/dev/null &
 
 ################################################################################
