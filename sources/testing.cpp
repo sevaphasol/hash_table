@@ -36,9 +36,10 @@ enum test_status_t
 
 //——————————————————————————————————————————————————————————————————————————————
 
-extern uint32_t djb2_hash  (char* key);
-extern uint32_t sdbm_hash  (char* key);
-extern uint32_t crc32_hash (char* str);
+extern uint32_t djb2_hash      (char* str);
+extern uint32_t sdbm_hash      (char* str);
+extern uint32_t crc32_hash     (char* str);
+extern uint32_t sse_crc32_hash (char* str);
 
 //------------------------------------------------------------------------------
 
@@ -59,7 +60,7 @@ int main()
     //--------------------------------------------------------------------------
 
     hash_table_t hash_table = {};
-    hash_table_ctor(&hash_table, HashTableSize, djb2_hash);
+    hash_table_ctor(&hash_table, HashTableSize, sse_crc32_hash);
 
     //--------------------------------------------------------------------------
 
