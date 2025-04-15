@@ -1,8 +1,8 @@
 COMPILER = gcc
 
-CFLAGS = -g  		 \
+CFLAGS = -g          \
 		 -I include  \
-		 -O0		 \
+		 -O0         \
 		 -fno-inline \
 
 SOURCES_EXTENSION = .cpp
@@ -12,11 +12,11 @@ SOURCES_EXTENSION = .cpp
 PROFILER 	     = valgrind
 GRAPHIC_PROFILER = kcachegrind
 
-PFLAGS = --quiet							  \
-		 --tool=callgrind 					  \
+PFLAGS = --quiet                              \
+		 --tool=callgrind                     \
 		 --callgrind-out-file=$(PROFILE_DATA) \
-		 --dump-instr=yes					  \
-		 --collect-jumps=yes				  \
+		 --dump-instr=yes                     \
+		 --collect-jumps=yes                  \
 
 ################################################################################
 
