@@ -7,8 +7,8 @@
 //——————————————————————————————————————————————————————————————————————————————
 
 static bool compare_keys(__m256i etalon_key, char* ptr_to_key);
-static hash_table_status_t check_key_for_uniqueness(__m256i key, node_t* list);
-static hash_table_status_t list_find(node_t* list, __m256i etalon_key, data_t* result);
+static hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list);
+static hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result);
 
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -59,9 +59,7 @@ hash_table_status_t hash_table_add(hash_table_t* hash_table,
 
     //--------------------------------------------------------------------------
 
-    __m256i key  = _mm256_load_si256((__m256i*) ptr_to_key);
-
-    VERIFY(check_key_for_uniqueness(key, list),
+    VERIFY(check_key_for_uniqueness(ptr_to_key, list),
            return HASH_TABLE_SAME_KEY_ERROR);
 
     //--------------------------------------------------------------------------
@@ -87,8 +85,10 @@ hash_table_status_t hash_table_add(hash_table_t* hash_table,
 
 //==============================================================================
 
-hash_table_status_t check_key_for_uniqueness(__m256i key, node_t* list)
+hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 {
+    __m256i key  = _mm256_load_si256((__m256i*) ptr_to_key);
+
     node_t* current_elem = list;
 
     while (current_elem) {
@@ -115,9 +115,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
     //--------------------------------------------------------------------------
 
-    __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
-
-    if (list_find(list, etalon_key, result)) {
+    if (list_find(list, ptr_to_etalon_key, result)) {
         return HASH_TABLE_SUCCESS;
     }
 
@@ -128,8 +126,10 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
 //==============================================================================
 
-hash_table_status_t list_find(node_t* list, __m256i etalon_key, data_t* result)
+hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result)
 {
+    __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
+
     node_t* current_elem = list;
 
     while (current_elem) {

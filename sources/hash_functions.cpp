@@ -85,10 +85,10 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 {
     uint32_t crc = 0;
 
-    for (int i = 0; i < 4; i++) {
-        crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key));
-        ptr_to_key += 8 * i;
-    }
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key     ));
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 8 ));
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 16));
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 24));
 
     return crc;
 }

@@ -2,7 +2,7 @@ COMPILER = g++
 
 CFLAGS = -g          \
          -I include  \
-         -Og         \
+         -O1         \
          -fno-inline \
 		 -mavx2      \
 
