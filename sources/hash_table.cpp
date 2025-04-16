@@ -6,9 +6,9 @@
 
 //——————————————————————————————————————————————————————————————————————————————
 
-static bool compare_keys(__m256i etalon_key, char* ptr_to_key);
+extern "C" bool compare_keys(__m256i etalon_key, char* ptr_to_key);
+extern "C" hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result);
 static hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list);
-static hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result);
 
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -115,47 +115,41 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
     //--------------------------------------------------------------------------
 
-    if (list_find(list, ptr_to_etalon_key, result)) {
-        return HASH_TABLE_SUCCESS;
-    }
-
-    //--------------------------------------------------------------------------
-
-    return HASH_TABLE_FIND_FAILURE;
+    return list_find(list, ptr_to_etalon_key, result);
 }
 
 //==============================================================================
 
-hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result)
-{
-    __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
-
-    node_t* current_elem = list;
-
-    while (current_elem) {
-        if (compare_keys(etalon_key, current_elem->key)) {
-            *result = current_elem->data;
-            return HASH_TABLE_SUCCESS;
-        }
-        current_elem = current_elem->next;
-    }
-
-    //--------------------------------------------------------------------------
-
-    return HASH_TABLE_FIND_FAILURE;
-}
+// hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result)
+// {
+//     __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
+//
+//     node_t* current_elem = list;
+//
+//     while (current_elem) {
+//         if (compare_keys(etalon_key, current_elem->key)) {
+//             *result = current_elem->data;
+//             return HASH_TABLE_SUCCESS;
+//         }
+//         current_elem = current_elem->next;
+//     }
+//
+//     //--------------------------------------------------------------------------
+//
+//     return HASH_TABLE_FIND_FAILURE;
+// }
 
 //==============================================================================
 
-bool compare_keys(__m256i etalon_key, char* ptr_to_key)
-{
-    __m256i  key = _mm256_load_si256((__m256i*) ptr_to_key);
-
-    __m256i  cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
-
-    int mask = _mm256_movemask_epi8(cmp_mask);
-
-    return mask == 0xffffffff;
-}
+// bool compare_keys(__m256i etalon_key, char* ptr_to_key)
+// {
+//     __m256i key = _mm256_load_si256((__m256i*) ptr_to_key);
+//
+//     __m256i cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
+//
+//     int mask = _mm256_movemask_epi8(cmp_mask);
+//
+//     return mask == 0xffffffff;
+// }
 
 //——————————————————————————————————————————————————————————————————————————————
