@@ -92,16 +92,37 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
     node_t* current_elem = list;
 
     while (current_elem) {
-        if (compare_keys(key, current_elem->key)) {
-            return HASH_TABLE_SAME_KEY_ERROR;
-        }
+
+        // bool cmp_result = compare_keys(key, current_elem->key);
+        compare_keys(key, current_elem->key);
+
+        asm volatile("jz .HASH_TABLE_SAME_KEY_ERROR");
+
+        // if (cmp_result) {
+        //     return HASH_TABLE_SAME_KEY_ERROR;
+        // }
 
         current_elem = current_elem->next;
     }
 
     //--------------------------------------------------------------------------
 
-    return HASH_TABLE_SUCCESS;
+    int volatile result = 0;
+
+    asm volatile("jmp .HASH_TABLE_SUCCESS");
+
+    asm volatile(".HASH_TABLE_SAME_KEY_ERROR:"
+                 "mov $1, %[result]"
+                 : [result] "=r" (result)::);
+
+    asm volatile(".HASH_TABLE_SUCCESS:");
+
+    if (result) {
+        // printf("%p\n", current_elem);
+        return HASH_TABLE_SAME_KEY_ERROR;
+    } else {
+        return HASH_TABLE_SUCCESS;
+    }
 }
 
 //==============================================================================

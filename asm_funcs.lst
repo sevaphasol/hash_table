@@ -31,34 +31,34 @@
     31                                      ; while (current_elem)
     32                                      .while_loop:
     33 00000007 4885DB                          test    rbx, rbx
-    34 0000000A 741F                            jz      .while_end
+    34 0000000A 741D                            jz      .while_end
     35                                  
     36                                      ; bool cmp_result = compare_keys(etalon_key, current_elem->key)
     37 0000000C 488B3B                          mov rdi, [rbx]
-    38 0000000F E81D000000                      call compare_keys
+    38 0000000F E81B000000                      call compare_keys
     39                                  
     40                                      ; if (cmp_result)
-    41 00000014 84C0                            test al, al
-    42 00000016 7506                            jnz .find_successfull
+    41                                          ; test al, al
+    42 00000014 7406                            jz .find_successfull
     43                                  
     44                                      .find_failed:
     45                                      ; current_elem = current_elem->next;
-    46 00000018 488B5B10                        mov rbx, [rbx + 16]
-    47 0000001C EBE9                            jmp .while_loop
+    46 00000016 488B5B10                        mov rbx, [rbx + 16]
+    47 0000001A EBEB                            jmp .while_loop
     48                                  
     49                                      .find_successfull:
     50                                      ; *result = current_elem->data;
-    51 0000001E 488B4308                        mov rax, [rbx+8]
-    52 00000022 488902                          mov [rdx], rax
+    51 0000001C 488B4308                        mov rax, [rbx+8]
+    52 00000020 488902                          mov [rdx], rax
     53                                  
     54                                      ; return HASH_TABLE_SUCCESS
-    55 00000025 B800000000                      mov eax, 0
-    56 0000002A C3                              ret
+    55 00000023 B800000000                      mov eax, 0
+    56 00000028 C3                              ret
     57                                  
     58                                      .while_end:
     59                                      ; return HASH_TABLE_FIND_FAILURE
-    60 0000002B B802000000                      mov eax, 2
-    61 00000030 C3                              ret
+    60 00000029 B802000000                      mov eax, 2
+    61 0000002E C3                              ret
     62                                  
     63                                  ; ----------------------------------------------------------------------------------------
     64                                  ; bool compare_keys(__m256i etalon_key, char* ptr_to_key)
@@ -73,12 +73,12 @@
     73                                  compare_keys:
     74                                  
     75                                      ;__m256i key = _mm256_load_si256((__m256i*) ptr_to_key);
-    76 00000031 C5FD740F                        vpcmpeqb ymm1, ymm0, [rdi]
+    76 0000002F C5FD740F                        vpcmpeqb ymm1, ymm0, [rdi]
     77                                  
     78                                      ; __m256i cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
-    79 00000035 C5FDD7C1                        vpmovmskb eax, ymm1
+    79 00000033 C5FDD7C1                        vpmovmskb eax, ymm1
     80                                  
     81                                      ; int mask = _mm256_movemask_epi8(cmp_mask);
-    82 00000039 83F8FF                          cmp     eax, 0FFFFFFFFh
-    83 0000003C 0F94C0                          setz    al
-    84 0000003F C3                              retn
+    82 00000037 83F8FF                          cmp     eax, 0FFFFFFFFh
+    83                                          ; setz    al
+    84 0000003A C3                              retn

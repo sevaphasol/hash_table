@@ -38,8 +38,8 @@ list_find:
         call compare_keys
 
     ; if (cmp_result)
-        test al, al
-        jnz .find_successfull
+        ; test al, al
+        jz .find_successfull
 
     .find_failed:
     ; current_elem = current_elem->next;
@@ -80,5 +80,5 @@ compare_keys:
 
     ; int mask = _mm256_movemask_epi8(cmp_mask);
         cmp     eax, 0FFFFFFFFh
-        setz    al
+        ; setz    al
         retn
