@@ -39,11 +39,7 @@ enum test_status_t
 
 //——————————————————————————————————————————————————————————————————————————————
 
-extern uint32_t djb2_hash         (char* str);
-extern uint32_t sdbm_hash         (char* str);
-extern uint32_t crc32_hash        (char* str);
-extern uint32_t intrin_crc32_hash (char* str);
-extern uint32_t avx2_crc32_hash   (char* str);
+extern uint32_t avx2_crc32_hash (char* str);
 
 //------------------------------------------------------------------------------
 

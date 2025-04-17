@@ -6,9 +6,21 @@
 
 //——————————————————————————————————————————————————————————————————————————————
 
-extern "C" bool compare_keys(__m256i etalon_key, char* ptr_to_key);
-extern "C" hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result);
-static hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list);
+extern "C" void                compare_keys             (__m256i etalon_key,
+                                                         char*   ptr_to_key);
+
+extern "C" hash_table_status_t list_find                (node_t* list,
+                                                         char* ptr_to_etalon_key,
+                                                         data_t* result);
+
+//------------------------------------------------------------------------------
+
+static hash_table_status_t     check_key_for_uniqueness (char*   ptr_to_key,
+                                                         node_t* list);
+
+//------------------------------------------------------------------------------
+
+uint32_t avx2_crc32_hash (char* ptr_to_key);
 
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -93,32 +105,26 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 
     while (current_elem) {
 
-        // bool cmp_result = compare_keys(key, current_elem->key);
         compare_keys(key, current_elem->key);
 
         asm volatile("jz .HASH_TABLE_SAME_KEY_ERROR");
-
-        // if (cmp_result) {
-        //     return HASH_TABLE_SAME_KEY_ERROR;
-        // }
 
         current_elem = current_elem->next;
     }
 
     //--------------------------------------------------------------------------
 
-    int volatile result = 0;
+    int volatile key_is_not_unuique = 0;
 
     asm volatile("jmp .HASH_TABLE_SUCCESS");
 
     asm volatile(".HASH_TABLE_SAME_KEY_ERROR:"
-                 "mov $1, %[result]"
-                 : [result] "=r" (result)::);
+                 "mov $1, %[key_is_not_unuique]"
+                 : [key_is_not_unuique] "=r" (key_is_not_unuique)::);
 
     asm volatile(".HASH_TABLE_SUCCESS:");
 
-    if (result) {
-        // printf("%p\n", current_elem);
+    if (key_is_not_unuique) {
         return HASH_TABLE_SAME_KEY_ERROR;
     } else {
         return HASH_TABLE_SUCCESS;
@@ -141,36 +147,17 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
 //==============================================================================
 
-// hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result)
-// {
-//     __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
-//
-//     node_t* current_elem = list;
-//
-//     while (current_elem) {
-//         if (compare_keys(etalon_key, current_elem->key)) {
-//             *result = current_elem->data;
-//             return HASH_TABLE_SUCCESS;
-//         }
-//         current_elem = current_elem->next;
-//     }
-//
-//     //--------------------------------------------------------------------------
-//
-//     return HASH_TABLE_FIND_FAILURE;
-// }
+uint32_t avx2_crc32_hash(char* ptr_to_key)
+{
+    uint32_t crc = 0;
+
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key     ));
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 8 ));
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 16));
+    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 24));
+
+    return crc;
+}
 
 //==============================================================================
 
-// bool compare_keys(__m256i etalon_key, char* ptr_to_key)
-// {
-//     __m256i key = _mm256_load_si256((__m256i*) ptr_to_key);
-//
-//     __m256i cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
-//
-//     int mask = _mm256_movemask_epi8(cmp_mask);
-//
-//     return mask == 0xffffffff;
-// }
-
-//——————————————————————————————————————————————————————————————————————————————
