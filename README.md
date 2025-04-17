@@ -3,7 +3,6 @@
 ## Содержание
 
 <div class="toc">
-  <h2>Содержание</h2>
   <div class="toc-item">1. <a href="#1-цель-работы">Цель работы</a></div>
   <div class="toc-item">2. <a href="#2-задачи">Задачи</a></div>
   <div class="toc-item">3. <a href="#3-теоретическая-часть">Теоретическая часть</a></div>
