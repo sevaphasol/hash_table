@@ -1,5 +1,5 @@
 ; ----------------------------------------------------------------------------------------
-; Implementation of function list_find for use in hash_table.cpp
+; Implementation of functions list_find and compare_keys for use in hash_table.cpp
 ; ----------------------------------------------------------------------------------------
 
 section .text
@@ -23,8 +23,9 @@ list_find:
     ; __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
         vmovdqa ymm0, [rsi]
 
-    ; we can use rbx, because caller saved doesn't use it after calling list_find
-    ; also caller saves rbx for caller of caller
+    ; save rbx because caller uses it
+        push rbx
+
     ; node_t* current_elem = list;
         mov rbx, rdi
 
@@ -51,11 +52,16 @@ list_find:
         mov rax, [rbx+8]
         mov [rdx], rax
 
+    ; restore rbx
+        pop rbx
+
     ; return HASH_TABLE_SUCCESS
         mov eax, 0
         ret
 
     .while_end:
+    ; restore rbx
+        pop rbx
     ; return HASH_TABLE_FIND_FAILURE
         mov eax, 2
         ret
@@ -79,6 +85,6 @@ compare_keys:
         vpmovmskb eax, ymm1
 
     ; int mask = _mm256_movemask_epi8(cmp_mask);
-        cmp     eax, 0FFFFFFFFh
-        ; setz    al
+        inc eax
+    ; setz al, al
         retn

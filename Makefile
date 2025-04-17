@@ -1,23 +1,37 @@
-COMPILER = g++
+# ---------------------------------------------------------------------------------------- #
 
-CFLAGS = -g          \
-         -I include  \
-         -O1         \
-         -fno-inline \
-		 -mavx2      \
+COMPILER  = g++
 
-LDFLAGS = -no-pie -pthread -Wl,-z,noexecstack
+CFLAGS    = -g          \
+            -I include  \
+            -O2         \
+		    -mavx2      \
 
 # ---------------------------------------------------------------------------------------- #
 
-PROFILER         = valgrind
-GRAPHIC_PROFILER = kcachegrind
+ASSEMBLER = nasm
 
-PFLAGS = --quiet                              \
-         --tool=callgrind                     \
-         --callgrind-out-file=$(PROFILE_DATA) \
-         --dump-instr=yes                     \
-         --collect-jumps=yes                  \
+ASMFLAGS  = -f elf64
+
+# ---------------------------------------------------------------------------------------- #
+
+LINKER    = g++
+
+LDFLAGS   = -Wl,-z,noexecstack
+
+# ---------------------------------------------------------------------------------------- #
+
+PROFILER  = valgrind
+
+PFLAGS    = --quiet                              \
+            --tool=callgrind                     \
+            --callgrind-out-file=$(PROFILE_DATA) \
+            --dump-instr=yes                     \
+            --collect-jumps=yes                  \
+
+# ---------------------------------------------------------------------------------------- #
+
+GRAPHIC_PROFILER = kcachegrind
 
 # ---------------------------------------------------------------------------------------- #
 
@@ -32,8 +46,13 @@ PROFILE_DATA = callgrind.out
 
 # ---------------------------------------------------------------------------------------- #
 
-SOURCES = $(wildcard $(SOURCES_DIR)/*.cpp)
-OBJECTS = $(subst $(SOURCES_DIR), $(OBJECTS_DIR), $(SOURCES:.cpp=.o))
+CPP_SOURCE_FILES  = $(wildcard $(SOURCES_DIR)/*.cpp)
+ASM_SOURCE_FILES  = $(wildcard $(SOURCES_DIR)/*.asm)
+
+CPP_OBJECT_FILES  = $(patsubst $(SOURCES_DIR)/%.cpp, $(OBJECTS_DIR)/%.o, $(CPP_SOURCE_FILES))
+ASM_OBJECT_FILES  = $(patsubst $(SOURCES_DIR)/%.asm, $(OBJECTS_DIR)/%.o, $(ASM_SOURCE_FILES))
+
+OBJECT_FILES      = $(CPP_OBJECT_FILES) $(ASM_OBJECT_FILES)
 
 # ---------------------------------------------------------------------------------------- #
 
@@ -45,11 +64,14 @@ $(OUTPUT_DIR):
 $(OBJECTS_DIR):
 	@mkdir -p $(OBJECTS_DIR)
 
-$(OUTPUT_PATH): $(OBJECTS) $(OUTPUT_DIR)
-	@$(COMPILER) $(OBJECTS) asm_funcs.o -o $@ $(LDFLAGS)
+$(OUTPUT_PATH): $(OBJECT_FILES) | $(OUTPUT_DIR)
+	@$(LINKER) $(OBJECT_FILES) $(LDFLAGS) -o $@
 
-$(OBJECTS_DIR)/%.o: $(SOURCES_DIR)/%.cpp $(OBJECTS_DIR)
+$(OBJECTS_DIR)/%.o: $(SOURCES_DIR)/%.cpp | $(OBJECTS_DIR)
 	@$(COMPILER) -c $(CFLAGS) $< -o $@
+
+$(OBJECTS_DIR)/%.o: $(SOURCES_DIR)/%.asm | $(OBJECTS_DIR)
+	@$(ASSEMBLER) $(ASMFLAGS) $< -o $@
 
 # ---------------------------------------------------------------------------------------- #
 
@@ -71,13 +93,3 @@ profile:
 	@$(GRAPHIC_PROFILER) $(PROFILE_DATA) 2>/dev/null &
 
 # ---------------------------------------------------------------------------------------- #
-
-ASSEMBLER         = nasm
-ASM_FLAGS         = -f elf64
-ASM_FILES		  = asm_funcs.asm
-
-# ---------------------------------------------------------------------------------------- #
-
-asm:
-	@$(ASSEMBLER) $(ASM_FLAGS) -l asm_funcs.lst asm_funcs.asm -o asm_funcs.o
-	# @$(ASSEMBLER) $(ASM_FLAGS) -l $(LISTING_DIR)/$*.lst $< -o $@

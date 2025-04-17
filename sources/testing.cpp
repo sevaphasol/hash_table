@@ -8,7 +8,11 @@
 
 //——————————————————————————————————————————————————————————————————————————————
 
-const char* const TestFile      = "for_testing/test2.bin";
+#define HASH_TABLE_FIND_RUNS 100
+
+//——————————————————————————————————————————————————————————————————————————————
+
+const char* const TestFile      = "for_testing/test.bin";
 const size_t      HashTableSize = 3571;
 
 //——————————————————————————————————————————————————————————————————————————————
@@ -114,11 +118,16 @@ test_status_t test_finding(test_ctx_t* ctx, hash_table_t* hash_table)
 
     //--------------------------------------------------------------------------
 
-    for (int i = 0; i < n_words; i++) {
-        hash_table_find(hash_table, &keys[i * 32], &result);
+    for (int j = 0; j < HASH_TABLE_FIND_RUNS; j++) {
+        for (int i = 0; i < n_words; i++) {
+            hash_table_find(hash_table, &keys[i * 32], &result);
 
-        if (result != data[i]) {
-            return TEST_FINDING_FAILURE;
+            if (result != data[i]) {
+                return TEST_FINDING_FAILURE;
+            }
+            if (!hash_table) {
+                return TEST_FINDING_FAILURE;
+            }
         }
     }
 
