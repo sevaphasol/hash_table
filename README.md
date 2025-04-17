@@ -67,10 +67,10 @@
 
 Проанализируем профиль программы в базовой реализации. На картинке снизу изображена часть интерфейса утилиты kcachegrind, которая визуализирует профиль программы, полученный профилировщиком valgrind.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Профиль программы в базовой реализации</figcaption>
+<div align="center">
+  <strong>Профиль программы в базовой реализации</strong><br>
   <img src="images/base_version.png" width="500" alt="base_version">
-</figure>
+</div>
 
 Столбец Incl содержит в себе информацию о количестве тактов процессора (далее полное время выполнения), затраченном на исполнение функции в столбце Function с учетом времени исполнения функций, вызванных в ней. Столбец Self содержит в себе ту же информацию, но уже без учета времени исполнения других функций (далее собственное время выполнения). В столбце Called можно видеть сколько раз данная функция была вызвана.
 
@@ -119,33 +119,33 @@ uint32_t crc32_hash(char* str)
 
 Посмотрим теперь, как данная реализация оптимизировала программу.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Профиль программы с оптимизацией хеш-функции</figcaption>
+<div align="center">
+  <strong>Профиль программы с оптимизацией хеш-функции</strong><br>
   <img src="images/crc32_intrinsic.png" width="500" alt="crc_32_intrinsic">
-</figure>
+</div>
 
-Полное время выполнения ***crc32_hash*** уменьшилось в $\frac{256\,282\,459}{125\,365\,341} \approx{2.04}$ раза.
+Полное время выполнения ***crc32_hash*** уменьшилось в $\frac{256\,282\,459}{125\,365\,341}$ ≈ $2.04$ раза.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Полное время выполнения main в базовой реализации</figcaption>
+<div align="center">
+  <strong>Полное время выполнения main в базовой реализации</strong><br>
   <img src="images/base_version_total.png" width="500" alt="base_version_total">
-</figure>
+</div>
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Полное время выполнения main с оптимизацией хеш-функции</figcaption>
+<div align="center">
+  <strong>Полное время выполнения main с оптимизацией хеш-функции</strong><br>
   <img src="images/crc32_intrinsic_total.png" width="500" alt="crc32_intrinsic_total">
-</figure>
+</div>
 
-Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{825\,069\,300}{697\,271\,000} \approx{1.18}$ раза
+Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{825\,069\,300}{697\,271\,000}$ ≈ $1.18$ раза
 
 ### 4.4 Оптимизация векторизацией
 
 Как видно из профиля программы с оптимизацией хеш-функции, ***crc32_hash*** все еще остается узким местом в программе. Однако мы пока не можем её ускорить ещё больше. Для дальнейшего анализа посмотрим на профиль программы с учетом всех функций. Для этого надо сменить вид в kcachegrind с ***Source file*** на ***(No Grouping)***.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Профиль программы с оптимизацией хеш-функции (No Grouping)</figcaption>
+<div align="center">
+  <strong>Профиль программы с оптимизацией хеш-функции (No Grouping)</strong><br>
   <img src="images/crc32_intrinsic_no_grouping.png" width="500" alt="crc32_intrinsic_no_grouping">
-</figure>
+</div>
 
 Становится понятно, что самым узким местом является сравнение ключей по значению. Раньше этого не было видно, так как в собственное время выполнения функции compare_keys не входит время выполнения функции ***__strcmp_avx2***. Заметим, также что название ***__strcmp_avx2*** дает серьезную подсказку к дальнейшей оптимизации.
 
@@ -200,21 +200,21 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 
 Посмотрим теперь, как данная реализация оптимизировала программу.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Профиль программы с оптимизацией векторизацией</figcaption>
+<div align="center">
+  <strong>Профиль программы с оптимизацией векторизацией</strong><br>
   <img src="images/avx2.png" width="500" alt="avx2">
-</figure>
+</div>
 
-Полное время выполнения ***compare_keys*** уменьшилось в $\frac{411\,960\,907}{67\,188\,675} \approx{6.13}$ раза.
+Полное время выполнения ***compare_keys*** уменьшилось в $\frac{411\,960\,907}{67\,188\,675}$ ≈ $6.13$ раза.
 
-Полное время выполнения ***crc32_hash*** уменьшилось в $\frac{125\,365\,341}{19\,431\,188} \approx{6.45}$ раза.
+Полное время выполнения ***crc32_hash*** уменьшилось в $\frac{125\,365\,341}{19\,431\,188}$ ≈ $6.45$ раза.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Полное время выполнения main с оптимизацией векторизацией</figcaption>
+<div align="center">
+  <strong>Полное время выполнения main с оптимизацией векторизацией</strong><br>
   <img src="images/avx2_total.png" width="500" alt="avx2_total">
-</figure>
+</div>
 
-Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{697\,271\,000}{310\,734\,700} \approx{2.24}$ раза
+Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{697\,271\,000}{310\,734\,700}$ ≈ $2.24$ раза
 
 ### 4.4 Оптимизация с помощью ассемблера
 
@@ -242,12 +242,12 @@ hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* res
 
 Вроде бы оптимизировать тут нечего, но, взглянув на ассемблерный код данной функции в том же kcachegrind, можно заметить кое-что интересное.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Ассемблерный код функции list_find</figcaption>
+<div align="center">
+  <strong>Ассемблерный код функции list_find</strong><br>
   <img src="images/list_find_asm.png" width="800" alt="list_find_asm">
-</figure>
+</div>
 
-Среди них есть одна странная вещь, а именно инструкция `vmovdqa (%rsi), %ymm1`. Смысл её понятен — загрузка значения `etalon_key` из памяти (адрес в `%rsi` [[4]](#bib4)) в регистр `ymm1`. Странность заключается в том, что компилятор таким образом делает лишнее действие. Значение из `%ymm1` потом кладётся в регистр `%ymm0`, так как по соглашениям о вызовах первый 256-битный параметр функции должен быть в `%ymm0`. То есть регистр `%ymm1` здесь просто-напросто не нужен. Более того, инструкция `vmovdqa %ymm1, %ymm0` находится в цикле и исполняется 133 319 раз (столбик Ir содержит информацию о том, сколько раз исполнялась инструкция из Assembly instructions), что составляет вместо с ненужной инструкцией `vmovdqa (%rsi), %ymm1` $\approx 9.6\%$ собственного времени работы функции ***list_find***. Казалось бы, флаг оптимизации **-O2** должен устранить подобные вещи, но почему-то этого не делает. Кстати, с **-O3** ситуация такая же.
+Среди них есть одна странная вещь, а именно инструкция `vmovdqa (%rsi), %ymm1`. Смысл её понятен — загрузка значения `etalon_key` из памяти (адрес в `%rsi` [[4]](#bib4)) в регистр `ymm1`. Странность заключается в том, что компилятор таким образом делает лишнее действие. Значение из `%ymm1` потом кладётся в регистр `%ymm0`, так как по соглашениям о вызовах первый 256-битный параметр функции должен быть в `%ymm0`. То есть регистр `%ymm1` здесь просто-напросто не нужен. Более того, инструкция `vmovdqa %ymm1, %ymm0` находится в цикле и исполняется 133 319 раз (столбик Ir содержит информацию о том, сколько раз исполнялась инструкция из Assembly instructions), что составляет вместо с ненужной инструкцией `vmovdqa (%rsi), %ymm1` ≈$9.6\%$ собственного времени работы функции ***list_find***. Казалось бы, флаг оптимизации **-O2** должен устранить подобные вещи, но почему-то этого не делает. Кстати, с **-O3** ситуация такая же.
 
 Написав функцию ***list_find*** на ассемблере можно избавиться от этой проблемы. Также можно убрать инструкции в начале функции, нужных для стекового фрейма [[5]](#bib5), так как написав код вручную можно оптимально использовать регистры вместо локальных переменных. Также если ещё написать функцию ***compare_keys*** на ассемблере, можно избавиться от инструкции `mov (%rcx), rdi`, которая нужна для соблюдения соглашений о вызовах [[4]](#bib4). Эта инструкция также выполняется в цикле, поэтому прирост будет значительным.
 
@@ -410,19 +410,19 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 
 Посмотрим теперь, как данная реализация оптимизировала программу.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Профиль программы с оптимизацией ассемблером</figcaption>
+<div align="center">
+  <strong>Профиль программы с оптимизацией ассемблером</strong><br>
   <img src="images/asm_code.png" width="500" alt="asm_code1">
-</figure>
+</div>
 
-Полное время выполнения ***list_find*** уменьшилось в $\frac{220\,037\,500}{163\,141\,300} \approx{1.35}$ раза.
+Полное время выполнения ***list_find*** уменьшилось в $\frac{220\,037\,500}{163\,141\,300}$ ≈ $1.35$ раза.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Полное время выполнения hash_table_find с оптимизацией ассемблером</figcaption>
+<div align="center">
+  <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br>
   <img src="images/asm_code_total.png" width="500" alt="asm_code_total1">
-</figure>
+</div>
 
-Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{310\,734\,700}{240\,096\,500} \approx{1.29}$ раза
+Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{310\,734\,700}{240\,096\,500}$ ≈ $1.29$ раза
 
 Хотелось бы обратить внимание, как было получено время выполнения ***list_find*** в ассемблерной реализации. Ведь в профиле программы его нет. Вместо этого возросло собственное время ***hash_table_find***. Всё дело в том, что ***hash_table_find*** не вызывает ***list_find*** как функцию, в ней находится `jmp` вместо `call`.
 
@@ -441,10 +441,10 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 Из листинга выше понятно, почему компилятор использует `jmp` вместо `call`.
 По этой причине приходится считать собственное время выполнения ***list_find*** вручную, с помощью данных в столбике Ir в ассемблерном коде функции в kcachegrind.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Ассемблерный код функции hash_table_find</figcaption>
+<div align="center">
+  <strong>Ассемблерный код функции hash_table_find</strong><br>
   <img src="images/hash_table_find_asm.png" width="1100" alt="hash_table_find_asm">
-</figure>
+</div>
 
 Ассемблерный код функции ***list_find*** находится с `1E00` по `1E2A`. Посчитать полное время выполнения ***list_find*** можно по формуле:
 ```math
@@ -457,43 +457,43 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
 Чтобы разобраться, что проиходит, достаточно взглянуть на ассемблерный код функции ***hash_table_find*** при различных флагах оптимизации.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">hash_table_find с флагом -O2</figcaption>
+<div align="center">
+  <strong>hash_table_find с флагом -O2</strong><br>
   <img src="images/hash_table_find_O2.png" width="1100" alt="-hash_table_find_O2">
-</figure>
+</div>
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">hash_table_find с флагом -O1</figcaption>
+<div align="center">
+  <strong>hash_table_find с флагом -O1</strong><br>
   <img src="images/hash_table_find_O1.png" width="1100" alt="-hash_table_find_O1">
-</figure>
+</div>
 
 Как видно из кода в реализации **O2** как было отмечено в конце предыдущего раздела компилятор реализует вызов ***list_find*** через `jump`, а не через `call`, поэтому сохранённые регистры, в том числе `rbp` восстанавливаются до ***list_find***.
 
 В реализации **O1** же ***list_find*** вызывается через `call`, поэтому регситры восстанвливаются после вызова ***list_find***. Таким образом "порченный" `rbp` восстанавливается функцией `hash_table_find`. Поэтому в реализации **-O1** можно не сохранять `rbp` в функции ***list_find***. Реализуем это и проанализируем результаты.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Полное время выполнения hash_table_find с оптимизацией ассемблером</figcaption>
+<div align="center">
+  <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br>
   <img src="images/O1_total.png" width="500" alt="O1_total">
-</figure>
+</div>
 
-Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{240\,096\,500}{237\,348\,100} \approx{1.01}$ раза.
+Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{240\,096\,500}{237\,348\,100}$ ≈ $1.01$ раза.
 
-Данная оптимизация дала прирост в скорости всего $\approx{1.1}\%$. Однако она очень небезопасна. Тот факт, что логика работы программы зависит от флага оптимизации, делает данную оптимизацию неоправданной. Поэтому в конечную версию она не войдёт.
+Данная оптимизация дала прирост в скорости всего ≈$1.1\%$. Однако она очень небезопасна. Тот факт, что логика работы программы зависит от флага оптимизации, делает данную оптимизацию неоправданной. Поэтому в конечную версию она не войдёт.
 
 ## Итоги
 В ходе проведённой использовался флаг компиляции `-fno-inline` для облегчения анализа профилировщика. Однако для конечной реализации, необходимо его отключить, чтобы получить объективный результат.
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Полное время выполнения hash_table_find в базовой реализации</figcaption>
+<div align="center">
+  <strong>Полное время выполнения hash_table_find в базовой реализации</strong><br>
   <img src="images/base_version_total_inline.png" width="500" alt="base_version_total_inline">
-</figure>
+</div>
 
-<figure style="text-align: center;">
-  <figcaption style="font-weight: bold; margin-bottom: 5px;">Полное время выполнения hash_table_find со всеми оптимизациями</figcaption>
+<div align="center">
+  <strong>Полное время выполнения hash_table_find со всеми оптимизациями</strong><br>
   <img src="images/last_version_inline.png" width="500" alt="last_version_inline">
-</figure>
+</div>
 
-Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{742\,551\,500}{240\,096\,500} \approx{3.09}$ раза.
+Полное время выполнения ***hash_table_find*** уменьшилось в $\frac{742\,551\,500}{240\,096\,500}$ ≈ $3.09$ раза.
 
 ## Библиография
 
