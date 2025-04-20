@@ -87,15 +87,14 @@
 
 Логика работы хеш-таблицы была описана в [теоретической части](#3-теоретическая-часть). Осталось только выбрать подходящую хеш-функцию, чтобы коллизий было как можно меньше. Чем меньше коллизий, тем меньше дисперсия — среднеквадратичное отклонение. Поэтому основным параметром выбора хеш-функции является дисперсия. Проведем исследование распределений количества элементов в каждом бакете хеш-таблицы в зависимости от хеш-функции.
 
-<div style="border: 2px solid #ccc; padding: 20px; margin: 30px 0; text-align: center;">
-  <strong>Сравнение хеш-функций</strong><br><br>
-  <img src="images/fnv1a_hash.png" width="600" alt="fnv1a_hash"><br><br>
-  <img src="images/murmurhash3.png" width="600" alt="murmurhash3"><br><br>
-  <img src="images/djb2_hash.png" width="600" alt="djb2_hash"><br><br>
-  <img src="images/sdbm_hash.png" width="600" alt="sdbm_hash"><br><br>
-  <img src="images/rotating_hash.png" width="600" alt="rotating_hash"><br><br>
-  <img src="images/crc32_hash.png" width="600" alt="crc32_hash"><br>
-</div>
+| Сравнение хеш-функций |
+|:---------------------:|
+| ![fnv1a_hash](images/fnv1a_hash.png) |
+| ![murmurhash3](images/murmurhash3.png) |
+| ![djb2_hash](images/djb2_hash.png) |
+| ![sdbm_hash](images/sdbm_hash.png) |
+| ![rotating_hash](images/rotating_hash.png) |
+| ![crc32_hash](images/crc32_hash.png) |
 
 Как видно из графиков, минимальное значение дисперсии у распределения хеш-функции crc32. Поэтому она и будет использоваться. *Load factor* в данных экспериментах равен $\approx7.7$. Таблица специально создаётся слишком маленькой, чтобы искусственно повышать *load factor*.
 
