@@ -173,8 +173,11 @@ uint32_t crc32_hash(char* str)
 Посмотрим теперь, как данная реализация оптимизировала программу.
 
 <div align="center">
+  <br>
   <strong>Профиль программы с оптимизацией хеш-функции</strong><br><br>
   <img src="images/crc32_intrinsic.png" width="500" alt="crc_32_intrinsic">
+  <br>
+  <br>
 </div>
 
 ```math
