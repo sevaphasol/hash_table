@@ -94,7 +94,7 @@
   <img src="images/djb2_hash.png" width="600" alt="djb2_hash"><br><br>
   <img src="images/sdbm_hash.png" width="600" alt="sdbm_hash"><br><br>
   <img src="images/rotating_hash.png" width="600" alt="rotating_hash"><br><br>
-  <img src="images/crc32_hash.png" width="600" alt="crc32_hash">
+  <img src="images/crc32_hash.png" width="600" alt="crc32_hash"><br><br>
 </div>
 
 Как видно из графиков, минимальное значение дисперсии у распределения хеш-функции crc32. Поэтому она и будет использоваться. *Load factor* в данных экспериментах равен $\approx7.7$. Таблица специально создаётся слишком маленькой, чтобы искусственно повышать *load factor*.
