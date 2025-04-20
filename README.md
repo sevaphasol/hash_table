@@ -545,6 +545,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
   <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br><br>
   <img src="images/O1_total.png" width="500" alt="O1_total">
   <br>
+  <br>
 </div>
 
 ```math
