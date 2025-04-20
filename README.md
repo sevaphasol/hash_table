@@ -118,7 +118,7 @@
 Проанализируем профиль программы в базовой реализации. На картинке снизу изображена часть интерфейса утилиты kcachegrind, которая визуализирует профиль программы, полученный профилировщиком valgrind.
 
 <div align="center">
-  <strong>Профиль программы в базовой реализации</strong><br>
+  <strong>Профиль программы в базовой реализации</strong><br><br>
   <img src="images/base_version.png" width="500" alt="base_version">
 </div>
 
@@ -170,7 +170,7 @@ uint32_t crc32_hash(char* str)
 Посмотрим теперь, как данная реализация оптимизировала программу.
 
 <div align="center">
-  <strong>Профиль программы с оптимизацией хеш-функции</strong><br>
+  <strong>Профиль программы с оптимизацией хеш-функции</strong><br><br>
   <img src="images/crc32_intrinsic.png" width="500" alt="crc_32_intrinsic">
 </div>
 
@@ -180,12 +180,12 @@ uint32_t crc32_hash(char* str)
 ```
 
 <div align="center">
-  <strong>Полное время выполнения hash_table_find в базовой реализации</strong><br>
+  <strong>Полное время выполнения hash_table_find в базовой реализации</strong><br><br>
   <img src="images/base_version_total.png" width="500" alt="base_version_total">
 </div>
 
 <div align="center">
-  <strong>Полное время выполнения hash_table_find с оптимизацией хеш-функции</strong><br>
+  <strong>Полное время выполнения hash_table_find с оптимизацией хеш-функции</strong><br><br>
   <img src="images/crc32_intrinsic_total.png" width="500" alt="crc32_intrinsic_total">
 </div>
 
@@ -199,7 +199,7 @@ uint32_t crc32_hash(char* str)
 Как видно из профиля программы с оптимизацией хеш-функции, ***crc32_hash*** все еще остается узким местом в программе. Однако мы пока не можем её ускорить ещё больше. Для дальнейшего анализа посмотрим на профиль программы с учетом всех функций. Для этого надо сменить вид в kcachegrind с ***Source file*** на ***(No Grouping)***.
 
 <div align="center">
-  <strong>Профиль программы с оптимизацией хеш-функции (No Grouping)</strong><br>
+  <strong>Профиль программы с оптимизацией хеш-функции (No Grouping)</strong><br><br>
   <img src="images/crc32_intrinsic_no_grouping.png" width="500" alt="crc32_intrinsic_no_grouping">
 </div>
 
@@ -257,7 +257,7 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 Посмотрим теперь, как данная реализация оптимизировала программу.
 
 <div align="center">
-  <strong>Профиль программы с оптимизацией векторизацией</strong><br>
+  <strong>Профиль программы с оптимизацией векторизацией</strong><br><br>
   <img src="images/avx2.png" width="500" alt="avx2">
 </div>
 
@@ -272,7 +272,7 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 ```
 
 <div align="center">
-  <strong>Полное время выполнения hash_table_find с оптимизацией векторизацией</strong><br>
+  <strong>Полное время выполнения hash_table_find с оптимизацией векторизацией</strong><br><br>
   <img src="images/avx2_total.png" width="500" alt="avx2_total">
 </div>
 
@@ -308,7 +308,7 @@ hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* res
 Вроде бы оптимизировать тут нечего, но, взглянув на ассемблерный код данной функции в том же **kcachegrind**, можно заметить кое-что интересное.
 
 <div align="center">
-  <strong>Ассемблерный код функции list_find</strong><br>
+  <strong>Ассемблерный код функции list_find</strong><br><br>
   <img src="images/list_find_asm.png" width="800" alt="list_find_asm">
 </div>
 
@@ -475,7 +475,7 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 Посмотрим теперь, как данная реализация оптимизировала программу.
 
 <div align="center">
-  <strong>Профиль программы с оптимизацией ассемблером</strong><br>
+  <strong>Профиль программы с оптимизацией ассемблером</strong><br><br>
   <img src="images/asm_code.png" width="500" alt="asm_code1">
 </div>
 
@@ -485,7 +485,7 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 ```
 
 <div align="center">
-  <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br>
+  <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br><br>
   <img src="images/asm_code_total.png" width="500" alt="asm_code_total1">
 </div>
 
@@ -511,7 +511,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 Из листинга выше становится понятно, почему компилятор использует `jmp` вместо `call`. Возвращение значения функции ***list_find*** эквивалентно `jmp` на неё. По этой причине приходится считать собственное время выполнения ***list_find*** вручную, с помощью данных в столбике **Ir** в ассемблерном коде функции в **kcachegrind**.
 
 <div align="center">
-  <strong>Ассемблерный код функции hash_table_find</strong><br>
+  <strong>Ассемблерный код функции hash_table_find</strong><br><br>
   <img src="images/hash_table_find_asm.png" width="1100" alt="hash_table_find_asm">
 </div>
 
@@ -527,12 +527,12 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 Чтобы разобраться, что происходит, достаточно взглянуть на ассемблерный код функции ***hash_table_find*** при различных флагах оптимизации.
 
 <div align="center">
-  <strong>hash_table_find с флагом -O2</strong><br>
+  <strong>hash_table_find с флагом -O2</strong><br><br>
   <img src="images/hash_table_find_O2.png" width="1100" alt="-hash_table_find_O2">
 </div>
 
 <div align="center">
-  <strong>hash_table_find с флагом -O1</strong><br>
+  <strong>hash_table_find с флагом -O1</strong><br><br>
   <img src="images/hash_table_find_O1.png" width="1100" alt="-hash_table_find_O1">
 </div>
 
@@ -540,7 +540,8 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
 В реализации **O1** же ***list_find*** вызывается через `call`, поэтому регистры восстанавливаются после вызова ***list_find***. Таким образом "испорченный" `rbp` восстанавливается функцией ***hash_table_find***. Поэтому в реализации **-O1** можно не сохранять `rbp` в функции ***list_find***. Реализуем это и проанализируем результаты.
 
-<div style="border: 1px solid #ccc; padding: 15px; margin: 20px 0; text-align: center;">
+<br>
+<div align="center">
   <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br><br>
   <img src="images/O1_total.png" width="500" alt="O1_total">
 </div>
@@ -548,6 +549,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 ```math
 Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{240\,096\,500}{237\,348\,100} \approx 1.01 раза.
 ```
+<br>
 
 Данная оптимизация дала прирост в скорости всего $\approx1.1\%$. Однако она очень небезопасна. Тот факт, что логика работы программы зависит от флага оптимизации, делает данную реализацию неоправданной. Поэтому в конечную версию она не войдёт.
 
@@ -555,12 +557,12 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 В ходе проведённой работы использовался флаг компиляции `-fno-inline` для облегчения анализа профилировщика. Однако для конечной реализации, необходимо его отключить, чтобы получить объективный результат.
 
 <div align="center">
-  <strong>Полное время выполнения hash_table_find в базовой реализации</strong><br>
+  <strong>Полное время выполнения hash_table_find в базовой реализации</strong><br><br>
   <img src="images/base_version_total_inline.png" width="500" alt="base_version_total_inline">
 </div>
 
 <div align="center">
-  <strong>Полное время выполнения hash_table_find со всеми оптимизациями</strong><br>
+  <strong>Полное время выполнения hash_table_find со всеми оптимизациями</strong><br><br>
   <img src="images/last_version_inline.png" width="500" alt="last_version_inline">
 </div>
 
