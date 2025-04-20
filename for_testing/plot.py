@@ -18,18 +18,18 @@ with open(input_file, "r") as file:
 
 load_factor = sum(counts) / len(buckets)
 mean_count = sum(counts) / len(counts)
-dispercion = sum((count - mean_count) ** 2 for count in counts) / len(counts)
+dispersion = sum((count - mean_count) ** 2 for count in counts) / len(counts)
 
 plt.figure(figsize=(10, 6))
 plt.bar(buckets, counts, color='blue', alpha=0.7)
-plt.title(f"Bucket Distribution for {output_file}")
+plt.title(f"Bucket Distribution for {output_file[output_file.find("/") + 1:]}")
 plt.xlabel("Bucket Index")
 plt.ylabel("Number of Key-Value Pairs")
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 
 plt.text(
     0.95, 0.95,
-    f"Dispercion = {dispercion:.2f}",
+    f"Dispersion = {dispersion:.2f}",
     fontsize=12, color='black', ha='right', va='top',
     transform=plt.gca().transAxes,
     bbox=dict(facecolor='white', alpha=0.5, edgecolor='gray')
@@ -38,6 +38,6 @@ plt.text(
 plt.savefig(output_file, dpi=300, bbox_inches='tight')
 
 print(f"Load factor = {load_factor:.1f}")
-print(f"Dispercion = {dispercion:.2f}")
+print(f"Dispersion = {dispersion:.2f}")
 
-plt.show()
+# plt.show()
