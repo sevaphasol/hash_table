@@ -540,8 +540,8 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
 В реализации **O1** же ***list_find*** вызывается через `call`, поэтому регистры восстанавливаются после вызова ***list_find***. Таким образом "испорченный" `rbp` восстанавливается функцией ***hash_table_find***. Поэтому в реализации **-O1** можно не сохранять `rbp` в функции ***list_find***. Реализуем это и проанализируем результаты.
 
-<div align="center">
-  <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br>
+<div style="border: 1px solid #ccc; padding: 15px; margin: 20px 0; text-align: center;">
+  <strong>Полное время выполнения hash_table_find с оптимизацией ассемблером</strong><br><br>
   <img src="images/O1_total.png" width="500" alt="O1_total">
 </div>
 
