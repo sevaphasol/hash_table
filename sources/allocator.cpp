@@ -66,6 +66,10 @@ void* allocate(allocator_t* allocator)
     void* allocated_memory = (char*) allocator->big_array[cur_container] +
                                      allocator->elem_size * free_unit;
 
+    if (!allocated_memory) {
+        fprintf(stderr, "bello\n");
+    }
+
     allocator->free_place++;
 
     //--------------------------------------------------------------------------
