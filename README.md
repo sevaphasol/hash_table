@@ -87,28 +87,14 @@
 
 Логика работы хеш-таблицы была описана в [теоретической части](#3-теоретическая-часть). Осталось только выбрать подходящую хеш-функцию, чтобы коллизий было как можно меньше. Чем меньше коллизий, тем меньше дисперсия — среднеквадратичное отклонение. Поэтому основным параметром выбора хеш-функции является дисперсия. Проведем исследование распределений количества элементов в каждом бакете хеш-таблицы в зависимости от хеш-функции.
 
-<div align="center">
-  <img src="images/fnv1a_hash.png" width="600" alt="fnv1a_hash">
-</div>
-
-<div align="center">
-  <img src="images/murmurhash3.png" width="600" alt="murmurhash3">
-</div>
-
-<div align="center">
-  <img src="images/djb2_hash.png" width="600" alt="djb2_hash">
-</div>
-
-<div align="center">
-  <img src="images/sdbm_hash.png" width="600" alt="sdbm_hash">
-</div>
-
-<div align="center">
-  <img src="images/rotating_hash.png" width="600" alt="rotating_hash">
-</div>
-
-<div align="center">
-  <img src="images/crc32_hash.png" width="600" alt="crc32_hash">
+<div style="border: 2px solid #ccc; padding: 20px; margin: 30px 0; text-align: center;">
+  <strong>Сравнение хеш-функций</strong><br><br>
+  <img src="images/fnv1a_hash.png" width="600" alt="fnv1a_hash"><br><br>
+  <img src="images/murmurhash3.png" width="600" alt="murmurhash3"><br><br>
+  <img src="images/djb2_hash.png" width="600" alt="djb2_hash"><br><br>
+  <img src="images/sdbm_hash.png" width="600" alt="sdbm_hash"><br><br>
+  <img src="images/rotating_hash.png" width="600" alt="rotating_hash"><br><br>
+  <img src="images/crc32_hash.png" width="600" alt="crc32_hash"><br>
 </div>
 
 Как видно из графиков, минимальное значение дисперсии у распределения хеш-функции crc32. Поэтому она и будет использоваться. *Load factor* в данных экспериментах равен $\approx7.7$. Таблица специально создаётся слишком маленькой, чтобы искусственно повышать *load factor*.
@@ -133,7 +119,7 @@
 
 Как видно из скрина выше узким местом является функция ***crc32_hash***. Её собственное время исполнения сильно больше чем у других функций.
 
-В базовой реализации для хеширования была выбрана функция crc32. Этот выбор не случайный. Так как crc32 — очень популярная хеш-функция, используемая для защиты данных, она реализована на аппаратном уровне в виде ассемблерной инструкции.
+В базовой реализации для хеширования была выбрана функция crc32. Этот выбор не случайный. Помимо хорошего распределения у crc32 есть ещё одна особенность. Так как crc32 — очень популярная хеш-функция, используемая для защиты данных, она реализована на аппаратном уровне в виде ассемблерной инструкции.
 
 ***Базовая реализация crc32_hash***
 ```c
