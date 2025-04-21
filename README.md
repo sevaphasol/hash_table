@@ -144,14 +144,14 @@
 uint32_t crc32_hash(char* str)
 {
     static uint32_t* crc32_table = init_crc32_table();
-    uint32_t         crc         = 0xFFFFFFFF;
+    uint32_t         crc         = 0;
 
     int i = 0;
     while (str[i] != '\0') {
         crc = (crc >> 8) ^ crc32_table[(crc ^ str[i++]) & 0xFF];
     }
 
-    return crc ^ 0xFFFFFFFF;
+    return crc;
 }
 ```
 
