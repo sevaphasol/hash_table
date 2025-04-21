@@ -24,18 +24,18 @@ list_find:
         vmovdqa ymm0, [rsi]
 
     ; save rbx because caller uses it
-        push rbx
+        ; push rbx
 
     ; node_t* current_elem = list;
-        mov rbx, rdi
+        mov r8, rdi
 
     ; while (current_elem)
     .while_loop:
-        test    rbx, rbx
+        test    r8, r8
         jz      .while_end
 
     ; bool cmp_result = compare_keys(etalon_key, current_elem->key)
-        mov rdi, [rbx]
+        mov rdi, [r8]
         call compare_keys
 
     ; if (cmp_result)
@@ -44,16 +44,16 @@ list_find:
 
     .find_failed:
     ; current_elem = current_elem->next;
-        mov rbx, [rbx + 16]
+        mov r8, [r8 + 16]
         jmp .while_loop
 
     .find_successfull:
     ; *result = current_elem->data;
-        mov rax, [rbx+8]
+        mov rax, [r8+8]
         mov [rdx], rax
 
     ; restore rbx
-        pop rbx
+        ; pop rbx
 
     ; return HASH_TABLE_SUCCESS
         mov eax, 0
@@ -61,7 +61,7 @@ list_find:
 
     .while_end:
     ; restore rbx
-        pop rbx
+        ; pop rbx
     ; return HASH_TABLE_FIND_FAILURE
         mov eax, 2
         ret
@@ -86,5 +86,5 @@ compare_keys:
 
     ; int mask = _mm256_movemask_epi8(cmp_mask);
         inc eax
-    ; setz al, al
+        ; setz al
         retn
