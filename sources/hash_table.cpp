@@ -155,9 +155,9 @@ hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* res
 
 bool compare_keys(__m256i etalon_key, char* ptr_to_key)
 {
-    __m256i  key = _mm256_load_si256((__m256i*) ptr_to_key);
+    __m256i key = _mm256_load_si256((__m256i*) ptr_to_key);
 
-    __m256i  cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
+    __m256i cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
 
     int mask = _mm256_movemask_epi8(cmp_mask);
 
@@ -170,10 +170,9 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 {
     uint32_t crc = 0;
 
-    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key     ));
-    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 8 ));
-    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 16));
-    crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + 24));
+    for (int i = 0; i < 4; i++) {
+        crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + i));
+    }
 
     return crc;
 }

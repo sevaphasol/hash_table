@@ -47,6 +47,7 @@ test_status_t test_ctx_ctor (test_ctx_t* ctx);
 test_status_t test_ctx_dtor (test_ctx_t* ctx);
 test_status_t test_adding   (test_ctx_t* ctx, hash_table_t* hash_table);
 test_status_t test_finding  (test_ctx_t* ctx, hash_table_t* hash_table);
+test_status_t get_data_for_hash_func         (hash_table_t* hash_table);
 
 //——————————————————————————————————————————————————————————————————————————————
 
@@ -76,10 +77,34 @@ int main()
 
     //--------------------------------------------------------------------------
 
+    get_data_for_hash_func(&hash_table);
+
+    //--------------------------------------------------------------------------
+
     hash_table_dtor(&hash_table);
     test_ctx_dtor(&ctx);
 
     return 0;
+}
+
+//==============================================================================
+
+test_status_t get_data_for_hash_func(hash_table_t* hash_table)
+{
+    FILE* file = fopen("plot_data", "w");
+
+    if (!file) {
+        fprintf(stderr, "Error while opening the file.\n");
+        return TEST_OPEN_FILE_ERROR;
+    }
+
+    for (size_t i = 0; i < HashTableSize; i++) {
+        fprintf(file, "%zu %zu\n", i, hash_table->buckets[i].size);
+    }
+
+    fclose(file);
+
+    return TEST_SUCCESS;
 }
 
 //==============================================================================
