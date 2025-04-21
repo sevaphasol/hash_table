@@ -210,6 +210,17 @@ uint32_t crc32_hash(char* str)
 ```
 <br>
 
+Заметим, что значения хеша изменятся, т.к. логика обсчёта хеша интринсиком другая. Проверим как изменилось распределение по бакетам в новой реализации хеш-функции.
+
+<div align="center">
+  <br>
+  <img src="images/crc32_hash with intrinsic.png" width="500" alt="crc32_hash with intrinsic">
+  <br>
+  <br>
+</div>
+
+Дисперсия увеличилась. Однако ускорение обсчёта хеша оправдывает ухудшение распределения.
+
 ### 4.5 Оптимизация векторизацией
 
 Как видно из профиля программы с оптимизацией хеш-функции, ***crc32_hash*** все еще остается узким местом в программе. Однако мы пока не можем её ускорить ещё больше. Для дальнейшего анализа посмотрим на профиль программы с учетом всех функций. Для этого надо сменить вид в kcachegrind с ***Source file*** на ***(No Grouping)***.
@@ -244,11 +255,11 @@ bool compare_keys(char* ptr_to_etalon_key, char* ptr_to_key)
 ```c
 bool compare_keys(__m256i etalon_key, char* ptr_to_key)
 {
-    __m256i key = _mm256_load_si256((__m256i*) ptr_to_key);
+    __m256i key      = _mm256_load_si256((__m256i*) ptr_to_key);
 
     __m256i cmp_mask = _mm256_cmpeq_epi8(etalon_key, key);
 
-    int mask = _mm256_movemask_epi8(cmp_mask);
+    int mask         = _mm256_movemask_epi8(cmp_mask);
 
     return mask == 0xffffffff;
 }
@@ -265,8 +276,7 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
     uint32_t crc = 0;
 
     for (int i = 0; i < 4; i++) {
-        crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key));
-        ptr_to_key += 8 * i;
+        crc = _mm_crc32_u64(crc, *((uint64_t*) ptr_to_key + i));
     }
 
     return crc;
@@ -284,7 +294,7 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 </div>
 
 ```math
-Полное\,время\,выполнения\,compare\_keys\,уменьшилось\,в\,\frac{411\,960\,907}{67\,188\,675} \approx 6.13 \,раза
+Полное\,время\,выполнения\,compare\_keys\,уменьшилось\,в\,\frac{411\,960\,907}{67\,450\,770} \approx 6.11 \,раза
 ```
 <br>
 
@@ -302,9 +312,20 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 </div>
 
 ```math
-Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{697\,271\,000}{310\,734\,700} \approx 2.24 \,раза
+Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{697\,271\,000}{311\,409\,400} \approx 2.24 \,раза
 ```
 <br>
+
+Как и в случае с оптимизацией хеш-функции, распределение изменится.
+
+<div align="center">
+  <br>
+  <img src="images/crc32_hash with vectorization.png" width="500" alt="crc32_hash with vectorization">
+  <br>
+  <br>
+</div>
+
+Дисперсия опять увеличилась. Но полученное ускорение оправдывает ухудшение распределения.
 
 ### 4.6 Оптимизация с помощью ассемблера
 
@@ -438,13 +459,13 @@ compare_keys:
 <div align="center">
   <br>
   <strong>Полное время выполнения hash_table_find с написанием функции на ассемблере в отдельном файле</strong><br><br>
-  <img src="images/asm_no_asm_inline.png" width="500" alt="asm_no_asm_inline">
+  <img src="images/asm_list_find_and_compare_keys.png" width="500" alt="asm_list_find_and_compare_keys">
   <br>
   <br>
 </div>
 
 ```math
-Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{310\,734\,700}{266\,760\,300} \approx 1.16 \,раза
+Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{310\,734\,700}{267\,435\,000} \approx 1.16 \,раза
 ```
 <br>
 
@@ -518,14 +539,14 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 <div align="center">
   <br>
   <strong>Профиль программы с оптимизацией ассемблером</strong><br><br>
-  <img src="images/asm_code.png" width="500" alt="asm_code1">
+  <img src="images/asm_with_inline.png" width="500" alt="asm_with_inline">
   <br>
   <br>
 </div>
 
 
 ```math
-Полное\,время\,выполнения\,list\_find\,уменьшилось\,в\,\frac{220\,037\,500}{163\,141\,300} \approx 1.35 \,раза
+Полное\,время\,выполнения\,list\_find\,уменьшилось\,в\,\frac{220\,712\,200}{163\,141\,300} \approx 1.35 \,раза
 ```
 <br>
 
@@ -538,7 +559,7 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 </div>
 
 ```math
-Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{310\,734\,700}{240\,096\,500} \approx 1.29 \,раза
+Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{310\,734\,700}{240\,667\,400} \approx 1.29 \,раза
 ```
 <br>
 
@@ -607,11 +628,11 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 </div>
 
 ```math
-Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{240\,096\,500}{237\,348\,100} \approx 1.011 \,раза
+Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{240\,667\,400}{237\,919\,000} \approx 1.012 \,раза
 ```
 <br>
 
-Данная оптимизация дала прирост в скорости всего $\approx1.1\%$. Однако она очень небезопасна. Тот факт, что логика работы программы зависит от флага оптимизации, делает данную реализацию неоправданной. Поэтому в конечную версию она не войдёт.
+Данная оптимизация дала прирост в скорости всего $\approx1.2\%$. Однако она очень небезопасна. Тот факт, что логика работы программы зависит от флага оптимизации, делает данную реализацию неоправданной. Поэтому в конечную версию она не войдёт.
 
 На самом деле очевидно, что никаких замен флагов оптимизации здесь не требуется. Ничто не мешает использовать **caller-saved** регистр вместо `rbx`, например `r8`. Тогда можно будет вызывать функцию с помощью `jump`. И проблем с сохранением `r8` не будет, это обеспечивается соглашениями о вызовах [[4]](#bib-4).
 
@@ -622,18 +643,18 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 <div align="center">
   <br>
   <strong>Полное время выполнения hash_table_find с полной оптимизацией list_find</strong><br><br>
-  <img src="images/r8_optimization.png" width="500" alt="r8_optimization">
+  <img src="images/r8_total.png" width="500" alt="r8_total">
   <br>
   <br>
 </div>
 
 ```math
-Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{240\,096\,500}{234\,599\,700} \approx 1.023 \,раза
+Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{240\,667\,400}{235\,170\,600} \approx 1.023 \,раза
 ```
 <br>
 
 ```math
-Общее\,ускорение\,hash\_table\_find\,после\,оптимизации\,ассемблером\,равно\,\frac{310\,734\,700}{234\,599\,700} \approx1.32 \,раза
+Общее\,ускорение\,hash\_table\_find\,после\,оптимизации\,ассемблером\,равно\,\frac{310\,734\,700}{235\,170\,600} \approx1.32 \,раза
 ```
 <br>
 
@@ -658,7 +679,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 </div>
 
 ```math
-Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{742\,551\,500}{234\,599\,700} \approx 3.17 \,раза.
+Полное\,время\,выполнения\,hash\_table\_find\,уменьшилось\,в\,\frac{742\,551\,500}{235\,170\,600} \approx 3.16 \,раза.
 ```
 <br>
 
