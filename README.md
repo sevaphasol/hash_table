@@ -291,7 +291,7 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 
 <div align="center">
   <br>
-  <strong>Профиль программы с оптимизацией векторизацией</strong><br><br>
+  <strong>Профиль программы с векторизацией</strong><br><br>
   <img src="images/avx2.png" width="500" alt="avx2">
   <br>
   <br>
@@ -625,7 +625,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
 <div align="center">
   <br>
-  <strong>Полное время выполнения hash_table_find с оптимизацией list_find</strong><br><br>
+  <strong>Полное время выполнения hash_table_find с оптимизацией list_find с флагом оптимизации -O1</strong><br><br>
   <img src="images/O1_total.png" width="500" alt="O1_total">
   <br>
   <br>
@@ -636,7 +636,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 ```
 <br>
 
-Данная оптимизация дала прирост в скорости всего ≈1.2%. Однако она очень небезопасна. Тот факт, что логика работы программы зависит от флага оптимизации, делает данную реализацию неоправданной. Поэтому в конечную версию она не войдёт.
+Данная оптимизация дала прирост в скорости всего ≈1.2%. Однако она очень небезопасна. Тот факт, что логика работы программы зависит даже от флага оптимизации, делает данную реализацию неоправданной. Поэтому в конечную версию она не войдёт.
 
 На самом деле очевидно, что никаких замен флагов оптимизации здесь не требуется. Ничто не мешает использовать **caller-saved** регистр вместо `rbx`, например `r8`. Тогда можно будет вызывать функцию с помощью `jump`. И проблем с сохранением `r8` не будет, это обеспечивается соглашениями о вызовах [[4]](#bib-4).
 
@@ -646,7 +646,7 @@ hash_table_status_t hash_table_find(hash_table_t* hash_table,
 
 <div align="center">
   <br>
-  <strong>Полное время выполнения hash_table_find с полной оптимизацией list_find</strong><br><br>
+  <strong>Полное время выполнения hash_table_find с полной оптимизацией list_find с флагом компиляции</strong><br><br>
   <img src="images/r8_total.png" width="500" alt="r8_total">
   <br>
   <br>
