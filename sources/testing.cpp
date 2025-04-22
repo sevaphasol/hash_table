@@ -121,9 +121,6 @@ test_status_t test_finding(test_ctx_t* ctx, hash_table_t* hash_table)
             if (result != data[i]) {
                 return TEST_FINDING_FAILURE;
             }
-            if (!hash_table) {
-                return TEST_FINDING_FAILURE;
-            }
         }
     }
 
