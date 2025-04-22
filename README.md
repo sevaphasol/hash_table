@@ -8,12 +8,12 @@
   <div class="toc-item">3. <a href="#3-теоретическая-часть">Теоретическая часть</a></div>
   <div class="toc-item">
     <div>4. <a href="#4-практическая-часть">Практическая часть</a></div>
-    <div class="toc-subitem">&emsp;&emsp;4.1 <a href="#41-тестирование">Тестирование</a></div>
-    <div class="toc-subitem">&emsp;&emsp;4.2 <a href="#42-поиск-узких-мест">Поиск узких мест</a></div>
-    <div class="toc-subitem">&emsp;&emsp;4.3 <a href="#43-сравнение-хеш-функций">Сравнение хеш-функций</a></div>
-    <div class="toc-subitem">&emsp;&emsp;4.4 <a href="#44-оптимизация-хеш-функции">Оптимизация хеш-функции</a></div>
-    <div class="toc-subitem">&emsp;&emsp;4.5 <a href="#45-оптимизация-векторизацией">Оптимизация векторизацией</a></div>
-    <div class="toc-subitem">&emsp;&emsp;4.6 <a href="#46-оптимизация-с-помощью-ассемблера">Оптимизация с помощью ассемблера</a></div>
+    <div class="toc-subitem">&emsp;&emsp;4.1. <a href="#41-тестирование">Тестирование</a></div>
+    <div class="toc-subitem">&emsp;&emsp;4.2. <a href="#42-поиск-узких-мест">Поиск узких мест</a></div>
+    <div class="toc-subitem">&emsp;&emsp;4.3. <a href="#43-сравнение-хеш-функций">Сравнение хеш-функций</a></div>
+    <div class="toc-subitem">&emsp;&emsp;4.4. <a href="#44-оптимизация-хеш-функции">Оптимизация хеш-функции</a></div>
+    <div class="toc-subitem">&emsp;&emsp;4.5. <a href="#45-оптимизация-векторизацией">Оптимизация векторизацией</a></div>
+    <div class="toc-subitem">&emsp;&emsp;4.6. <a href="#46-оптимизация-с-помощью-ассемблера">Оптимизация с помощью ассемблера</a></div>
   </div>
   <div class="toc-item">5. <a href="#5-итоги">Итоги</a></div>
   <div class="toc-item">6. <a href="#6-литература">Литература</a></div>
