@@ -143,7 +143,7 @@
 
 ***Базовая реализация crc32_hash***
 ```c
-uint32_t crc32_hash(char* str)
+uint32_t crc32_hash(const char* str)
 {
     static uint32_t* crc32_table = init_crc32_table();
     uint32_t         crc         = 0;
@@ -163,7 +163,7 @@ uint32_t crc32_hash(char* str)
 
 ***Реализация crc32_hash с интринсиком***
 ```c
-uint32_t crc32_hash(char* str)
+uint32_t crc32_hash(const char* str)
 {
     uint32_t crc = 0;
 
@@ -247,7 +247,7 @@ uint32_t crc32_hash(char* str)
 
 ***Базовая реализация compare_keys***
 ```c
-bool compare_keys(char* ptr_to_etalon_key, char* ptr_to_key)
+bool compare_keys(const char* ptr_to_etalon_key, const char* ptr_to_key)
 {
     return !strcmp(ptr_to_etalon_key, ptr_to_key);
 }
@@ -255,7 +255,7 @@ bool compare_keys(char* ptr_to_etalon_key, char* ptr_to_key)
 
 ***Векторизация compare_keys***
 ```c
-bool compare_keys(__m256i etalon_key, char* ptr_to_key)
+bool compare_keys(__m256i etalon_key, const char* ptr_to_key)
 {
     __m256i key      = _mm256_load_si256((__m256i*) ptr_to_key);
 
@@ -273,7 +273,7 @@ bool compare_keys(__m256i etalon_key, char* ptr_to_key)
 
 ***Векторизация crc32_hash***
 ```c
-uint32_t avx2_crc32_hash(char* ptr_to_key)
+uint32_t avx2_crc32_hash(const char* ptr_to_key)
 {
     uint32_t crc = 0;
 
@@ -337,7 +337,7 @@ uint32_t avx2_crc32_hash(char* ptr_to_key)
 
 ***Базовая реализация list_find***
 ```c
-hash_table_status_t list_find(node_t* list, char* ptr_to_etalon_key, data_t* result)
+hash_table_status_t list_find(node_t* list, const char* ptr_to_etalon_key, data_t* result)
 {
     __m256i etalon_key  = _mm256_load_si256((__m256i*) ptr_to_etalon_key);
 
@@ -480,7 +480,7 @@ compare_keys:
 Однако есть нюанс, который состоит в том, что ***compare_keys*** вызывается не только из ***list_find***, но и из ***check_key_for_uniqueness***, вызываемой из функции добавления элемента ***hash_table_add***.
 
 ```c
-hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
+hash_table_status_t check_key_for_uniqueness(const char* ptr_to_key, node_t* list)
 {
     __m256i key  = _mm256_load_si256((__m256i*) ptr_to_key);
 
@@ -505,7 +505,7 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 Поэтому модифицируем ***check_key_for_uniqueness*** с помощью ассемблерных вставок.
 
 ```c
-hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
+hash_table_status_t check_key_for_uniqueness(const char* ptr_to_key, node_t* list)
 {
     __m256i key  = _mm256_load_si256((__m256i*) ptr_to_key);
 
@@ -571,7 +571,7 @@ hash_table_status_t check_key_for_uniqueness(char* ptr_to_key, node_t* list)
 
 ```c
 hash_table_status_t hash_table_find(hash_table_t* hash_table,
-                                    char*         ptr_to_etalon_key,
+                                    const char*   ptr_to_etalon_key,
                                     data_t*       result)
 {
     size_t index = hash_table->hash_function(ptr_to_etalon_key) % hash_table->size;
